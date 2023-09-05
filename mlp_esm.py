@@ -50,7 +50,7 @@ def main(data_root, ont, model_name, batch_size, epochs, load, device):
     terms_dict, train_data, valid_data, test_data, test_df = load_data(data_root, ont)
     n_terms = len(terms_dict)
     
-    net = DGPROModel(5120, n_terms, device).to(device)
+    net = DGPROModel(2560, n_terms, device).to(device)
     
     train_features, train_labels = train_data
     valid_features, valid_labels = valid_data
@@ -204,10 +204,9 @@ class MLPBlock(nn.Module):
 
 class DGPROModel(nn.Module):
 
-    def __init__(self, nb_iprs, nb_gos, device, nodes=[5120,]):
+    def __init__(self, input_length, nb_gos, device, nodes=[2560,]):
         super().__init__()
         self.nb_gos = nb_gos
-        input_length = 5120
         net = []
         for hidden_dim in nodes:
             net.append(MLPBlock(input_length, hidden_dim))
@@ -238,7 +237,7 @@ def load_data(data_root, ont):
     return terms_dict, train_data, valid_data, test_data, test_df
 
 def get_data(df, terms_dict):
-    data = th.zeros((len(df), 5120), dtype=th.float32)
+    data = th.zeros((len(df), 2560), dtype=th.float32)
     labels = th.zeros((len(df), len(terms_dict)), dtype=th.float32)
     for i, row in enumerate(df.itertuples()):
         data[i, :] = th.FloatTensor(row.esm2)
