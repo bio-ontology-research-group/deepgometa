@@ -24,7 +24,7 @@ from torch_utils import FastTensorDataLoader
     '--ont', '-ont', default='mf',
     help='Prediction model')
 @ck.option(
-    '--model-name', '-m', default='deepgozero_esm',
+    '--model-name', '-m', default='deepgo_esm',
     help='Prediction model')
 @ck.option(
     '--batch-size', '-bs', default=37,
@@ -38,19 +38,18 @@ from torch_utils import FastTensorDataLoader
     '--device', '-d', default='cuda:1',
     help='Device')
 def main(data_root, ont, model_name, batch_size, epochs, load, device):
-    go_file = f'{data_root}/go.norm'
+    go_norm_file = f'{data_root}/go-plus.norm'
     model_file = f'{data_root}/{ont}/{model_name}.th'
     terms_file = f'{data_root}/{ont}/terms.pkl'
-    out_file = f'{data_root}/{ont}/nextprot_predictions_{model_name}.pkl'
+    out_file = f'{data_root}/{ont}/predictions_{model_name}.pkl'
 
-    go = Ontology(f'{data_root}/go.obo', with_rels=True)
+    go = Ontology(f'{data_root}/go-basic.obo', with_rels=True)
     loss_func = nn.BCELoss()
-    iprs_dict, terms_dict, train_data, valid_data, test_data, test_df = load_data(data_root, ont, terms_file)
+    terms_dict, train_data, valid_data, test_data, test_df = load_data(data_root, ont, terms_file)
     n_terms = len(terms_dict)
-    n_iprs = len(iprs_dict)
     
     nf1, nf2, nf3, nf4, relations, zero_classes = load_normal_forms(
-        go_file, terms_dict)
+        go_norm_file, terms_dict)
     n_rels = len(relations)
     n_zeros = len(zero_classes)
 
@@ -62,7 +61,7 @@ def main(data_root, ont, model_name, batch_size, epochs, load, device):
     nf4 = th.LongTensor(nf4).to(device)
     normal_forms = nf1, nf2, nf3, nf4
 
-    net = DGZeroModel(2560, n_terms, n_zeros, n_rels, device).to(device)
+    net = DGModel(2560, n_terms, n_zeros, n_rels, device).to(device)
     print(net)
     train_features, train_labels = train_data
     valid_features, valid_labels = valid_data
@@ -277,13 +276,12 @@ class MLPBlock(nn.Module):
         return x
 
 
-class DGZeroModel(nn.Module):
+class DGModel(nn.Module):
 
-    def __init__(self, nb_iprs, nb_gos, nb_zero_gos, nb_rels, device, hidden_dim=2560, embed_dim=2560, margin=0.1):
+    def __init__(self, input_length, nb_gos, nb_zero_gos, nb_rels, device, hidden_dim=2560, embed_dim=2560, margin=0.1):
         super().__init__()
         self.nb_gos = nb_gos
         self.nb_zero_gos = nb_zero_gos
-        input_length = 2560
         net = []
         net.append(MLPBlock(input_length, hidden_dim))
         net.append(Residual(MLPBlock(hidden_dim, hidden_dim)))
@@ -414,21 +412,18 @@ def load_data(data_root, ont, terms_file):
     terms_dict = {v: i for i, v in enumerate(terms)}
     print('Terms', len(terms))
     
-    ipr_df = pd.read_pickle(f'{data_root}/{ont}/interpros.pkl')
-    iprs = ipr_df['interpros'].values
-    iprs_dict = {v:k for k, v in enumerate(iprs)}
-
+    
     train_df = pd.read_pickle(f'{data_root}/{ont}/train_data.pkl')
     valid_df = pd.read_pickle(f'{data_root}/{ont}/valid_data.pkl')
-    test_df = pd.read_pickle(f'{data_root}/{ont}/nextprot_data.pkl')
+    test_df = pd.read_pickle(f'{data_root}/{ont}/test_data.pkl')
 
-    train_data = get_data(train_df, iprs_dict, terms_dict)
-    valid_data = get_data(valid_df, iprs_dict, terms_dict)
-    test_data = get_data(test_df, iprs_dict, terms_dict)
+    train_data = get_data(train_df, terms_dict)
+    valid_data = get_data(valid_df, terms_dict)
+    test_data = get_data(test_df, terms_dict)
 
-    return iprs_dict, terms_dict, train_data, valid_data, test_data, test_df
+    return terms_dict, train_data, valid_data, test_data, test_df
 
-def get_data(df, iprs_dict, terms_dict):
+def get_data(df, terms_dict):
     data = th.zeros((len(df), 2560), dtype=th.float32)
     labels = th.zeros((len(df), len(terms_dict)), dtype=th.float32)
     for i, row in enumerate(df.itertuples()):
