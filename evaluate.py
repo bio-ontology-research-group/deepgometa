@@ -43,7 +43,7 @@ def main(data_root, ont, model, combine, alpha, num_preds):
     train_data_file = f'{data_root}/{ont}/train_data.pkl'
     valid_data_file = f'{data_root}/{ont}/valid_data.pkl'
     test_data_file = f'{data_root}/{ont}/predictions_{model}.pkl'
-    diam_data_file = f'{data_root}/{ont}/test_data_diam.pkl'
+    # diam_data_file = f'{data_root}/{ont}/test_data_diam.pkl'
     terms_file = f'{data_root}/{ont}/terms.pkl'
     go_rels = Ontology(f'data/go-basic.obo', with_rels=True)
     terms_df = pd.read_pickle(terms_file)
@@ -54,7 +54,7 @@ def main(data_root, ont, model, combine, alpha, num_preds):
     valid_df = pd.read_pickle(valid_data_file)
     train_df = pd.concat([train_df, valid_df])
     test_df = pd.read_pickle(test_data_file)
-    diam_df = pd.read_pickle(diam_data_file)
+    # diam_df = pd.read_pickle(diam_data_file)
     
     annotations = train_df['prop_annotations'].values
     annotations = list(map(lambda x: set(x), annotations))
@@ -71,11 +71,11 @@ def main(data_root, ont, model, combine, alpha, num_preds):
     eval_preds = []
     
     for i, row in enumerate(test_df.itertuples()):
-        diam_preds = np.zeros((len(terms),), dtype=np.float32)
-        for go_id, score in diam_df.iloc[i]['diam_preds'].items():
-            if go_id in terms_dict:
-                diam_preds[terms_dict[go_id]] = score
-        preds = diam_preds * alpha + row.preds * (1 - alpha)
+        # diam_preds = np.zeros((len(terms),), dtype=np.float32)
+        # for go_id, score in diam_df.iloc[i]['diam_preds'].items():
+        #     if go_id in terms_dict:
+        #         diam_preds[terms_dict[go_id]] = score
+        preds = row.preds # diam_preds * alpha + row.preds * (1 - alpha)
         eval_preds.append(preds)
 
     labels = np.zeros((len(test_df), len(terms)), dtype=np.float32)

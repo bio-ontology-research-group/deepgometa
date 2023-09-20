@@ -117,8 +117,6 @@ def main(data_root, ont, model_name, batch_size, epochs, load, device):
 
             # scheduler.step()
             
-        log_file.close()
-
     # Loading best model
     print('Loading the best model')
     net.load_state_dict(th.load(model_file))
