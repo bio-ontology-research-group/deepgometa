@@ -14,6 +14,8 @@ from itertools import cycle
 import math
 from aminoacids import to_onehot, MAXLEN
 from torch_utils import FastTensorDataLoader
+from multiprocessing import Pool
+from functools import partial
 
 
 @ck.command()
@@ -38,7 +40,7 @@ from torch_utils import FastTensorDataLoader
     '--device', '-d', default='cuda:1',
     help='Device')
 def main(data_root, ont, model_name, batch_size, epochs, load, device):
-    go_norm_file = f'{data_root}/go-plus.norm'
+    go_norm_file = f'{data_root}/go.norm'
     model_file = f'{data_root}/{ont}/{model_name}.th'
     terms_file = f'{data_root}/{ont}/terms.pkl'
     out_file = f'{data_root}/{ont}/predictions_{model_name}.pkl'
@@ -77,7 +79,7 @@ def main(data_root, ont, model_name, batch_size, epochs, load, device):
     valid_labels = valid_labels.detach().cpu().numpy()
     test_labels = test_labels.detach().cpu().numpy()
     
-    optimizer = th.optim.Adam(net.parameters(), lr=5e-4)
+    optimizer = th.optim.Adam(net.parameters(), lr=1e-3)
     scheduler = MultiStepLR(optimizer, milestones=[5, 20], gamma=0.1)
 
     best_loss = 10000.0
@@ -166,32 +168,36 @@ def main(data_root, ont, model_name, batch_size, epochs, load, device):
                 logits = net(batch_features)
                 batch_loss = F.binary_cross_entropy(logits, batch_labels)
                 test_loss += batch_loss.detach().cpu().item()
-                preds = np.append(preds, logits.detach().cpu().numpy())
+                preds.append(logits.detach().cpu().numpy())
             test_loss /= test_steps
-        preds = preds.reshape(-1, n_terms)
-        roc_auc = compute_roc(test_labels, preds)
+            preds = np.concatenate(preds)
+            roc_auc = compute_roc(test_labels, preds)
         print(f'Valid Loss - {valid_loss}, Test Loss - {test_loss}, Test AUC - {roc_auc}')
 
     # return
     preds = list(preds)
     # Propagate scores using ontology structure
-    for i, scores in enumerate(preds):
-        prop_annots = {}
-        for go_id, j in terms_dict.items():
-            score = scores[j]
-            for sup_go in go.get_anchestors(go_id):
-                if sup_go in prop_annots:
-                    prop_annots[sup_go] = max(prop_annots[sup_go], score)
-                else:
-                    prop_annots[sup_go] = score
-        for go_id, score in prop_annots.items():
-            if go_id in terms_dict:
-                scores[terms_dict[go_id]] = score
+    with Pool(32) as p:
+        preds = p.map(partial(propagate_annots, go=go, terms_dict=terms_dict), preds)
 
     test_df['preds'] = preds
 
     test_df.to_pickle(out_file)
 
+
+def propagate_annots(preds, go, terms_dict):
+    prop_annots = {}
+    for go_id, j in terms_dict.items():
+        score = preds[j]
+        for sup_go in go.get_ancestors(go_id):
+            if sup_go in prop_annots:
+                prop_annots[sup_go] = max(prop_annots[sup_go], score)
+            else:
+                prop_annots[sup_go] = score
+    for go_id, score in prop_annots.items():
+        if go_id in terms_dict:
+            preds[terms_dict[go_id]] = score
+    return preds
     
 def compute_roc(labels, preds):
     # Compute ROC curve and ROC area for each class
