@@ -40,7 +40,7 @@ def main(data_root, model_name, ont, combine, n_models):
     valid_data_file = f'{data_root}/{ont}/valid_data.pkl'
     test_data_file = f'{data_root}/{ont}/predictions_{model_name}_0.pkl'
     terms_file = f'{data_root}/{ont}/terms.pkl'
-    go_rels = Ontology(f'{data_root}/go.obo', with_rels=True)
+    go_rels = Ontology(f'{data_root}/go-basic.obo', with_rels=True)
     terms_df = pd.read_pickle(terms_file)
     terms = terms_df['gos'].values.flatten()
     terms_dict = {v: i for i, v in enumerate(terms)}
