@@ -80,7 +80,7 @@ def main(data_root, ont, model_name, batch_size, epochs, load, device):
     test_labels = test_labels.detach().cpu().numpy()
     
     optimizer = th.optim.Adam(net.parameters(), lr=1e-3)
-    scheduler = MultiStepLR(optimizer, milestones=[5, 20], gamma=0.1)
+    scheduler = MultiStepLR(optimizer, milestones=[10, 20], gamma=0.1)
 
     best_loss = 10000.0
     if not load:
@@ -133,7 +133,7 @@ def main(data_root, ont, model_name, batch_size, epochs, load, device):
                 print('Saving model')
                 th.save(net.state_dict(), model_file)
 
-            scheduler.step()
+            # scheduler.step()
             
 
     # Loading best model
