@@ -132,21 +132,21 @@ def main(data_root, model_name, ont, combine, n_models):
         
     for t in range(0, 101):
         threshold = t / 100.0
-        preds = []
-        for i, row in enumerate(test_df.itertuples()):
+        preds = [set() for _ in range(len(test_df))]
+        for i in range(len(test_df)):
             annots = set()
-            for j, go_id in enumerate(terms):
-                if eval_preds[i, j] >= threshold:
-                    annots.add(go_id)
-
+            above_threshold = np.argwhere(eval_preds[i] >= threshold).flatten()
+            for j in above_threshold:
+                annots.add(terms[j])
+        
             if t == 0:
-                preds.append(annots)
+                preds[i] = annots
                 continue
             # new_annots = set()
             # for go_id in annots:
-            #     new_annots |= go_rels.get_anchestors(go_id)
-            preds.append(annots)
-
+            #     new_annots |= go_rels.get_ancestors(go_id)
+            preds[i] = annots
+        
             
         # Filter classes
         preds = list(map(lambda x: set(filter(lambda y: y in go_set, x)), preds))
@@ -157,7 +157,7 @@ def main(data_root, model_name, ont, combine, n_models):
             #     print(row.accessions)
             
             spec_match += len(spec_labels[i].intersection(preds[i]))
-        print(f'AVG IC {avg_ic:.3f}')
+        # print(f'AVG IC {avg_ic:.3f}')
         precisions.append(prec)
         recalls.append(rec)
         # print(f'Fscore: {fscore}, Precision: {prec}, Recall: {rec} S: {s}, RU: {ru}, MI: {mi} threshold: {threshold}, WFmax: {wf}')
@@ -258,6 +258,7 @@ def evaluate_annotations(go, real_annots, pred_annots):
 
 
 def get_top_models(ont, model, n_models):
+    return [0,3,]
     valid_losses = []
     for ind in range(10):
         with open(f'data/{ont}/valid_{model}_{ind}.pf') as f:
