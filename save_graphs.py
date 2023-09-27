@@ -68,7 +68,7 @@ def main():
 
         train_df = pd.concat([train_df, valid_df])
 
-        test_df = pd.read_pickle(f'data/{ont}/nextprot_data.pkl')
+        test_df = pd.read_pickle(f'data/{ont}/test_data.pkl')
         test_proteins = test_df['proteins']
         for i, p_id in enumerate(test_proteins):
             prot_idx[p_id] = train_n + valid_n + i
@@ -101,7 +101,7 @@ def main():
         graph.edata['etypes'] = th.LongTensor(edge_types)
         graph = dgl.add_self_loop(graph)
         dgl.save_graphs(
-            f'data/{ont}/ppi_nextprot.bin', graph,
+            f'data/{ont}/ppi.bin', graph,
             {
                 'train_nids': th.LongTensor(np.arange(train_n)),
                 'valid_nids': th.LongTensor(np.arange(train_n, train_n + valid_n)),

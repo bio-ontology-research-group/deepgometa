@@ -29,7 +29,7 @@ from functools import partial
     '--ont', '-ont', default='mf',
     help='Prediction model')
 @ck.option(
-    '--model-name', '-m', default='deepgozero_gat',
+    '--model-name', '-m', default='deepgo_gat',
     help='Prediction model')
 @ck.option(
     '--batch-size', '-bs', default=37,
@@ -43,10 +43,10 @@ from functools import partial
     '--device', '-d', default='cuda:1',
     help='Device')
 def main(data_root, ont, model_name, batch_size, epochs, load, device):
-    go_file = f'{data_root}/go.obo'
+    go_file = f'{data_root}/go-basic.obo'
     model_file = f'{data_root}/{ont}/{model_name}.th'
     terms_file = f'{data_root}/{ont}/terms.pkl'
-    out_file = f'{data_root}/{ont}/nextprot_predictions_{model_name}.pkl'
+    out_file = f'{data_root}/{ont}/predictions_{model_name}.pkl'
 
     go = Ontology(go_file, with_rels=True)
 
@@ -69,7 +69,7 @@ def main(data_root, ont, model_name, batch_size, epochs, load, device):
     test_nids = test_nids.to(device)
 
     nf1, nf2, nf3, nf4, relations, zero_classes = load_normal_forms(
-        f'{data_root}/go.norm', terms_dict)
+        f'{data_root}/go-basic.norm', terms_dict)
     n_rels = len(relations)
     n_zeros = len(zero_classes)
 
@@ -158,7 +158,7 @@ def main(data_root, ont, model_name, batch_size, epochs, load, device):
                 print('Saving model')
                 th.save(net.state_dict(), model_file)
 
-            scheduler.step()
+            # scheduler.step()
             
         log_file.close()
 
@@ -357,16 +357,16 @@ class DeepGO2Model(nn.Module):
         
     def el_loss(self, go_normal_forms):
         nf1, nf2, nf3, nf4 = go_normal_forms
-        nf1_loss = self.nf1_loss(nf1)
-        nf2_loss = self.nf2_loss(nf2)
-        nf3_loss = self.nf3_loss(nf3)
-        nf4_loss = self.nf4_loss(nf4)
-        # print()
-        # print(nf1_loss.detach().item(),
-        #       nf2_loss.detach().item(),
-        #       nf3_loss.detach().item(),
-        #       nf4_loss.detach().item())
-        return nf1_loss + nf3_loss + nf4_loss + nf2_loss
+        loss = 0
+        if len(nf1):
+            loss += self.nf1_loss(nf1)
+        if len(nf2):
+            loss += self.nf2_loss(nf2)
+        if len(nf3):
+            loss += self.nf3_loss(nf3)
+        if len(nf4):
+            loss += self.nf4_loss(nf4)
+        return loss
 
     def class_dist(self, data):
         c = self.go_norm(self.go_embed(data[:, 0]))
@@ -447,10 +447,10 @@ def load_data(data_root, ont):
 
     train_df = pd.read_pickle(f'{data_root}/{ont}/train_data.pkl')
     valid_df = pd.read_pickle(f'{data_root}/{ont}/valid_data.pkl')
-    test_df = pd.read_pickle(f'{data_root}/{ont}/nextprot_data.pkl')
+    test_df = pd.read_pickle(f'{data_root}/{ont}/test_data.pkl')
 
     df = pd.concat([train_df, valid_df, test_df])
-    graphs, nids = dgl.load_graphs(f'{data_root}/{ont}/ppi_nextprot.bin')
+    graphs, nids = dgl.load_graphs(f'{data_root}/{ont}/ppi.bin')
 
     data, labels = get_data(df, terms_dict)
     graph = graphs[0]
