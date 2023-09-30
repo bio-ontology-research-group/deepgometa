@@ -12,10 +12,10 @@ logging.basicConfig(level=logging.INFO)
 
 @ck.command()
 @ck.option(
-    '--swissprot-file', '-sf', default='data/uniprot_sprot_2023_01.dat.gz',
+    '--swissprot-file', '-sf', default='data/uniprot_sprot_2023_03.dat.gz',
     help='UniProt/SwissProt knowledgebase file in text format (archived)')
 @ck.option(
-    '--out-file', '-o', default='data/swissprot_exp_2023_01.pkl',
+    '--out-file', '-o', default='data/swissprot_exp_2023_03.pkl',
     help='Result file with a list of proteins, sequences and annotations')
 def main(swissprot_file, out_file):
     go = Ontology('data/go-basic.obo', with_rels=True)
@@ -30,6 +30,13 @@ def main(swissprot_file, out_file):
         'orgs': orgs,
         'interpros': interpros
     })
+
+    for i, row in enumerate(df.itertuples()):
+        for annot in row.annotations:
+            go_id, code = annot.split('|')
+            if go_id == 'GO:0102220':
+                print(row.proteins, row.orgs, code)
+    return
 
     with open('data/meta_tax.lst') as f:
         meta_tax = set(f.read().splitlines())
