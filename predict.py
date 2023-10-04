@@ -27,9 +27,11 @@ import os
 def main(in_file, data_root, threshold, batch_size, device):
 
     # Extract ESM features
-    # esm_dir = Path(f'{data_root}/esm')
-    # proteins, data = extract_esm(in_file, output_dir=esm_dir)
-    proteins, data = load_esm(in_file)
+    # esm_dir = f'{data_root}/esm/'
+    fn = os.path.splitext(in_file)[0]
+    out_file_esm = '{fn}_{esm}.pkl'
+    proteins, data = extract_esm(in_file, out_file=out_file_esm)
+    # proteins, data = load_esm(in_file)
     
     # Load GO and read list of all terms
     go_file = f'{data_root}/go-basic.obo'
@@ -42,7 +44,6 @@ def main(in_file, data_root, threshold, batch_size, device):
     }
     for ont in ['mf', 'cc', 'bp']:
         terms_file = f'{data_root}/{ont}/terms.pkl'
-        fn = os.path.splitext(in_file)[0]
         out_file = f'{fn}_preds_{ont}.pkl'
         terms_df = pd.read_pickle(terms_file)
         terms = terms_df['gos'].values.flatten()
