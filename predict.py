@@ -29,7 +29,7 @@ def main(in_file, data_root, threshold, batch_size, device):
     # Extract ESM features
     # esm_dir = f'{data_root}/esm/'
     fn = os.path.splitext(in_file)[0]
-    out_file_esm = f'{fn}_{esm}.pkl'
+    out_file_esm = f'{fn}_esm.pkl'
     proteins, data = extract_esm(in_file, out_file=out_file_esm)
     # proteins, data = load_esm(in_file)
     
