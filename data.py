@@ -62,9 +62,9 @@ def main(data_root, go_file, data_file):
         print(f'Number of {ont} iprs {len(iprs)}')
 
         terms_df = pd.DataFrame({'gos': terms})
-        terms_df.to_pickle(out_terms_file)
+        # terms_df.to_pickle(out_terms_file)
         iprs_df = pd.DataFrame({'interpros': interpros})
-        iprs_df.to_pickle(f'data/{ont}/interpros.pkl')
+        # iprs_df.to_pickle(f'data/{ont}/interpros.pkl')
         
         # Split train/valid/test
         proteins = tdf['proteins']
@@ -137,9 +137,9 @@ def main(data_root, go_file, data_file):
         valid_df = tdf.iloc[valid_index]
         test_df = tdf.iloc[test_index]
 
-        train_df.to_pickle(f'data/{ont}/train_data.pkl')
-        valid_df.to_pickle(f'data/{ont}/valid_data.pkl')
-        test_df.to_pickle(f'data/{ont}/test_data.pkl')
+        # train_df.to_pickle(f'data/{ont}/train_data.pkl')
+        # valid_df.to_pickle(f'data/{ont}/valid_data.pkl')
+        # test_df.to_pickle(f'data/{ont}/test_data.pkl')
         
 
         print(f'Train/Valid/Test proteins for {ont} {len(train_df)}/{len(valid_df)}/{len(test_df)}')
