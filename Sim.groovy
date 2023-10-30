@@ -169,9 +169,10 @@ GParsPool.withPool {
 def out = new PrintWriter(new BufferedWriter(
   new FileWriter(resSimPath)))
 for (i = 0; i < result.size(); i++) {
-  def x = i.intdiv(genes.size())
-  def y = i % genes.size()
-  out.println(result[i])
+    if ((i + 1) % genes.size() == 0)
+        out.print(String.format("%.3f", result[i]) + '\n')
+    else
+        out.print(String.format("%.3f", result[i]) + ' ')
 }
 out.flush()
 out.close()
