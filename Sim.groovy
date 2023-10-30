@@ -60,7 +60,7 @@ def getOntology = {
   G graph = new GraphMemory(graph_uri)
 
   // Load OBO file to graph "go.obo"
-  GDataConf goConf = new GDataConf(GFormat.OBO, "data/go-basic.obo")
+  GDataConf goConf = new GDataConf(GFormat.RDF_XML, "data/go-basic.owl")
   GraphLoaderGeneric.populate(goConf, graph)
 
   // Add virtual root for 3 subontologies__________________________________
@@ -153,8 +153,8 @@ def c = 0
 GParsPool.withPool {
   result.eachParallel { val ->
     def i = val.toInteger()
-    def x = i.intdiv(diseases.size())
-    def y = i % diseases.size()
+    def x = i.intdiv(genes.size())
+    def y = i % genes.size()
     result[i] = engine.compare(
             smConfGroupwise,
             smConfPairwise,
