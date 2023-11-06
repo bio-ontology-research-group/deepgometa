@@ -91,17 +91,15 @@ def getURIfromName = { name ->
 }
 
 def getGenes = {
-  def genes = []
-  def i = 0
-  new File(annotationsPath).splitEachLine('\t') { items ->
-    def s = 0
-    genes.push(new Gene(i, new LinkedHashSet()))
-    for (int j = 1; j < items.size(); j++) {
-      genes[i].addAnnotation(getURIfromName(items[j]))
+    def genes = []
+    new File(annotationsPath).splitEachLine('\t') { items ->
+        def annots = new Gene(0, new LinkedHashSet())
+        for (int j = 1; j < items.size(); j++) {
+            annots.addAnnotation(getURIfromName(items[j]))
+        }
+        genes.push(annots)
     }
-    i++
-  }
-  return genes
+    return genes
 }
 
 graph = getOntology()
