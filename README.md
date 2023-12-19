@@ -9,4 +9,4 @@ This repository contains the scripts and datafiles used in the DeepGOmeta manusc
 3. **Functional annotation**:
    * OTU tables - [generate](PairedDatasets/16S_function_abundance.py) a weighted functional profile for each OTU table using DeepGOmeta predictions
    * Protein fasta - [run]() DeepGOmeta on Prodigal output from metagenome assemblies, and [generate](PairedDatasets/WGS_function_binary.py) a binary functional profile for each dataset
-4. **Clustering and Purity**: 
+4. **Clustering and Purity**: use a metadata file and the functional profile to apply PCA, k-means clustering, calculating purity, and generating plots for [16S datasets](PairedDatasets/16S_pheno_PCA.py) and [WGS datasets](PairedDatasets/WGS_pheno_PCA.py)
