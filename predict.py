@@ -30,7 +30,7 @@ def main(in_file, data_root, threshold, batch_size, device):
     # esm_dir = f'{data_root}/esm/'
     fn = os.path.splitext(in_file)[0]
     out_file_esm = f'{fn}_esm.pkl'
-    proteins, data = extract_esm(in_file, out_file=out_file_esm)
+    proteins, data = extract_esm(in_file, out_file=out_file_esm, device=device)
     # proteins, data = load_esm(in_file)
     
     # Load GO and read list of all terms
@@ -44,7 +44,7 @@ def main(in_file, data_root, threshold, batch_size, device):
     }
     for ont in ['mf', 'cc', 'bp']:
         terms_file = f'{data_root}/{ont}/terms.pkl'
-        out_file = f'{fn}_preds_{ont}.pkl'
+        out_file = f'{fn}_preds_{ont}.tsv.gz'
         terms_df = pd.read_pickle(terms_file)
         terms = terms_df['gos'].values.flatten()
         terms_dict = {v: i for i, v in enumerate(terms)}
@@ -77,22 +77,22 @@ def main(in_file, data_root, threshold, batch_size, device):
         preds = sum_preds / len(ent_models[ont])
         go_ind = [None] * len(proteins)
         scores = [None] * len(proteins)
-        # with gzip.open(out_file, 'wt') as f:
-        for i in range(len(proteins)):
-            above_threshold = np.argwhere(preds[i] >= threshold).flatten()
-                # for j in above_threshold:
-                #     name = go.get_term(terms[j])['name']
-                #     f.write(f'{proteins[i]}\t{terms[j]}\t{preds[i,j]:0.3f}\n')
-            cur_preds = preds[i, above_threshold]
-            go_ind[i] = above_threshold
-            scores[i] = cur_preds
-        df = pd.DataFrame({
-            'proteins': proteins,
-            'go_ind': go_ind,
-            'scores': scores
-        })
+        with gzip.open(out_file, 'wt') as f:
+            for i in range(len(proteins)):
+                above_threshold = np.argwhere(preds[i] >= threshold).flatten()
+                for j in above_threshold:
+                    name = go.get_term(terms[j])['name']
+                    f.write(f'{proteins[i]}\t{terms[j]}\t{preds[i,j]:0.3f}\t{name}\n')
+        #     cur_preds = preds[i, above_threshold]
+        #     go_ind[i] = above_threshold
+        #     scores[i] = cur_preds
+        # df = pd.DataFrame({
+        #     'proteins': proteins,
+        #     'go_ind': go_ind,
+        #     'scores': scores
+        # })
         
-        df.to_pickle(out_file)
+        # df.to_pickle(out_file)
 
 def load_esm(in_file):
     npz_data = np.load(in_file)

@@ -41,9 +41,9 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 def main(data_root, ont, model, combine, alpha, num_preds):
     train_data_file = f'{data_root}/{ont}/train_data.pkl'
     valid_data_file = f'{data_root}/{ont}/valid_data.pkl'
-    test_data_file = f'{data_root}/{ont}/predictions_{model}.pkl'
+    test_data_file = f'{data_root}/{ont}/time_predictions_{model}.pkl'
     # diam_data_file = f'{data_root}/{ont}/test_data_diam.pkl'
-    terms_file = f'{data_root}/{ont}/terms.pkl'
+    terms_file = f'{data_root}/{ont}/all_terms.pkl'
     go_rels = Ontology(f'data/go-basic.obo', with_rels=True)
     terms_df = pd.read_pickle(terms_file)
     terms = terms_df['gos'].values.flatten()

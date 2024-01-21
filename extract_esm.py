@@ -49,7 +49,8 @@ class GzippedFastaBatchedDataset(FastaBatchedDataset):
 
 
 def extract_esm(fasta_file, model_location='esm2_t36_3B_UR50D',
-                truncation_seq_length=1022, toks_per_batch=4096, out_file=None):
+                truncation_seq_length=1022, toks_per_batch=4096,
+                out_file=None, device='cpu'):
     if out_file is not None and os.path.exists(out_file):
         obj = torch.load(out_file)
         data = obj['data']
@@ -59,8 +60,10 @@ def extract_esm(fasta_file, model_location='esm2_t36_3B_UR50D',
     model, alphabet = pretrained.load_model_and_alphabet(model_location)
     model.eval()
     if torch.cuda.is_available():
-        model = model.cuda()
+        model = model.to(device)
         print("Transferred model to GPU")
+    else:
+        device = 'cpu'
 
     if fasta_file.endswith('.gz'):
         dataset = GzippedFastaBatchedDataset.from_file(fasta_file)
@@ -85,7 +88,7 @@ def extract_esm(fasta_file, model_location='esm2_t36_3B_UR50D',
                 f"Processing {batch_idx + 1} of {len(batches)} batches ({toks.size(0)} sequences)"
             )
             if torch.cuda.is_available():
-                toks = toks.to(device="cuda", non_blocking=True)
+                toks = toks.to(device=device, non_blocking=True)
 
             out = model(toks, repr_layers=repr_layers, return_contacts=return_contacts)
 
