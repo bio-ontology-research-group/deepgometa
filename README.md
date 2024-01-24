@@ -1,6 +1,32 @@
 # deepgometa
 This repository contains the scripts and datafiles used in the DeepGOmeta manuscript.
 
+# Dependencies
+* The code was developed and tested using python 3.10.
+* Clone the repository: `git clone https://github.com/bio-ontology-research-group/deepgometa.git`
+* Create virtual environment with Conda or python3-venv module. 
+* Install PyTorch: `pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2`
+* Install DGL: `pip install dgl==1.1.2+cu117 -f https://data.dgl.ai/wheels/cu117/repo.html`
+* Install other requirements:
+  `pip install -r requirements.txt`
+
+
+# Running DeepGOMeta model
+Follow these instructions to obtain predictions for your proteins. You'll need
+around 30Gb storage and a GPU with >16Gb memory (or you can use CPU)
+* Download the [data.tar.gz](https://deepgo.cbrc.kaust.edu.sa/data/deepgometa/data.tar.gz)
+* Extract `tar xvzf data.tar.gz`
+* Run the model `python predict.py -if data/example.fa`
+
+
+# Docker container
+We also provide a docker container with all dependencies installed:
+`docker pull coolmaksat/deepgometa` \
+This repository is installed at /deepgometa directory. To run the scripts you'll
+need to mount the data directory. Example: \
+`docker run --gpus all -v $(pwd)/data:/workspace/deepgometa/data coolmaksat/deepgometa python predict.py -if data/example.fa`
+
+
 ## Paired Datasets
 1. **Data and metadata**: download from SRA and MG-RAST using [sample accessions](PairedDatasets/Sample_data.csv)
 2. **Processing reads**:
