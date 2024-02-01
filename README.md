@@ -1,4 +1,4 @@
-# deepgometa
+# DeepGOMeta
 This repository contains the scripts and datafiles used in the DeepGOmeta manuscript.
 
 # Dependencies
@@ -26,8 +26,18 @@ This repository is installed at /deepgometa directory. To run the scripts you'll
 need to mount the data directory. Example: \
 `docker run --gpus all -v $(pwd)/data:/workspace/deepgometa/data coolmaksat/deepgometa python predict.py -if data/example.fa`
 
+# Nextflow
+DeepGOMeta can be run as a Nextflow workflow using the docker image for easier execution.
 
-## Paired Datasets
+Requirements:
+* For amplicon data: OTU table of relative abundance, where OTUs are classified using the RDP database
+* For WGS data: Protein sequences in FASTA format 
+
+1. After cloning the repository, navigate to the Nextflow directory: `cd Nextflow`
+2. Update the runOptions paths in [nextflow.config](Nextflow/nextflow.config)
+3. Run workflow. Example: `nextflow run DeepGOMeta.nf -profile docker/singularity --amplicon true --OTU_table otu_relative_abd.tsv --pkl_dir /PATH/TO/PKL/DIR/`
+
+# Paired Datasets
 1. **Data and metadata**: download from SRA and MG-RAST using [sample accessions](PairedDatasets/Sample_data.csv)
 2. **Processing reads**:
    * 16S reads - generate OTU tables using the Nextflow [16SProcessing workflow](https://github.com/bio-ontology-research-group/16SProcessing)
