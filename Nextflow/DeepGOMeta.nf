@@ -16,7 +16,7 @@ params.out_dir = 'results' // Default output directory
 params.amplicon = false
 params.wgs = false
 params.python_paths = "/data_and_scripts/"
-params.pkl_dir = "/home/tawfiqre/standardize_methods/DeepGOMeta/data_and_scripts/rdp_genomes_preds/"
+params.pkl_dir = "/home/tawfiqre/standardize_methods/DeepGOMeta/data_and_scripts/rdp_genomes/"
 
 /*
     ================================================================================
