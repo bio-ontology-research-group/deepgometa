@@ -35,7 +35,8 @@ Requirements:
 
 1. After cloning the repository, navigate to the Nextflow directory: `cd Nextflow`
 2. Update the runOptions paths in [nextflow.config](Nextflow/nextflow.config)
-3. Run workflow. Example: `nextflow run DeepGOMeta.nf -profile docker/singularity --amplicon true --OTU_table otu_relative_abd.tsv --pkl_dir /PATH/TO/PKL/DIR/`
+3. Navigate to the data directory `cd data` and download the [genome annotations](https://bio2vec.cbrc.kaust.edu.sa/data/deepgometa/rdp_genomes.tar.gz)
+4. Run workflow. Example: `nextflow run DeepGOMeta.nf -profile docker/singularity --amplicon true --OTU_table otu_relative_abd.tsv --pkl_dir /PATH/TO/PKL/DIR/`
 
 # Paired Datasets
 1. **Data and metadata**: download from SRA and MG-RAST using [sample accessions](PairedDatasets/Sample_data.csv)
